@@ -90,18 +90,12 @@ bk_adobet_integration.functions.generateMbox = function() {
 	window.bk_adobet_integration.data.insertProfileBKCamps = ("profile.bkCamps=" + window.bk_adobet_integration.data.bkCampStr);
 	window.bk_adobet_integration.data.insertProfileBKCatIds = ("profile.bkCatIds=" + window.bk_adobet_integration.data.bkCatIdSt);
 
-	// Parse BlueKai Campaign Results
-	if (typeof mboxDefine === "function") {
-						
-		(new Image).src = "//" + bk_adobet_integration.adobe_company + ".tt.omtrdc.net/m2/" + bk_adobet_integration.adobe_company + "/ubox/image?mbox=bk_data_feed&" + window.bk_adobet_integration.data.insertProfileBKCamps + "&" + window.bk_adobet_integration.data.bkCatIdSt + "&mboxDefault\x3dhttp%3A%2F%2Ftags.bkrtx.com%2F1x1.gif"
+	// Parse BlueKai Campaign Results	
+	(new Image).src = "//" + window.bk_adobet_integration.adobe_company + ".tt.omtrdc.net/m2/" + window.bk_adobet_integration.adobe_company + "/ubox/image?mbox=bk_data_feed&" + window.bk_adobet_integration.data.insertProfileBKCamps + "&" + window.bk_adobet_integration.data.bkCatIdSt + "&mboxDefault\x3dhttp%3A%2F%2Ftags.bkrtx.com%2F1x1.gif"
 
-		bk_adobet_integration.functions.logger("BLUEKAI ADOBE TARGET : Profile Pixel fired");
-		bk_adobet_integration.functions.logger("BLUEKAI ADOBE TARGET : Pixel URL is '" + "//" + bk_adobet_integration.adobe_domain + ".tt.omtrdc.net/m2/" + bk_adobet_integration.adobe_company + "/ubox/image?mbox=bk_data_feed&" + window.bk_adobet_integration.data.insertProfileBKCamps + "&" + window.bk_adobet_integration.data.bkCatIdSt + "&mboxDefault\x3dhttp%3A%2F%2Ftags.bkrtx.com%2F1x1.gif'");
+	bk_adobet_integration.functions.logger("BLUEKAI ADOBE TARGET : Profile Pixel fired");
+	bk_adobet_integration.functions.logger("BLUEKAI ADOBE TARGET : Pixel URL is '" + "//" + bk_adobet_integration.adobe_company + ".tt.omtrdc.net/m2/" + bk_adobet_integration.adobe_company + "/ubox/image?mbox=bk_data_feed&" + window.bk_adobet_integration.data.insertProfileBKCamps + "&" + window.bk_adobet_integration.data.bkCatIdSt + "&mboxDefault\x3dhttp%3A%2F%2Ftags.bkrtx.com%2F1x1.gif'");
 		
-	} else {
-		bk_adobet_integration.functions.logger("BLUEKAI ADOBE TARGET : mboxDefine() doesn't exist");
-	}
-
 }
 
 // FUNCTION : Call BlueKai
