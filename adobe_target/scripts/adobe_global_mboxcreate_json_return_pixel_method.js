@@ -1,7 +1,7 @@
 /*
-######################################################################################################
-### ORACLE BLUEKAI : ADOBE TARGET : GLOBAL BOX : mboxCreate() : JSON Return handler : Pixel Method ###
-######################################################################################################
+#######################################################################################
+### ORACLE BLUEKAI : ADOBE TARGET : GLOBAL BOX : JSON Return handler : Pixel Method ###
+#######################################################################################
 
 Author : roshan.gonsalkorale@oracle.com
 
@@ -22,8 +22,7 @@ window.bk_adobet_integration = {};
 window.bk_adobet_integration.functions = {};
 window.bk_adobet_integration.data = {};
 window.bk_adobet_integration.bluekai_jsonreturn_id = "39538"; // CHANGE TO YOUR ID
-window.bk_adobet_integration.adobe_domain = "bt"; // CHANGE TO "DOMAIN" IN "//DOMAIN.tt.omtrdc.net/m2/COMPANY/"
-window.bk_adobet_integration.adobe_company = "bt"; // CHANGE TO "COMPANY" IN "//DOMAIN.tt.omtrdc.net/m2/COMPANY/"
+window.bk_adobet_integration.adobe_company = "oracleexchangepartne"; // CHANGE TO "COMPANY" IN "//COMPANY.tt.omtrdc.net/m2/COMPANY/"
 
 
 
@@ -94,7 +93,7 @@ bk_adobet_integration.functions.generateMbox = function() {
 	// Parse BlueKai Campaign Results
 	if (typeof mboxDefine === "function") {
 						
-		(new Image).src = "//" + bk_adobet_integration.adobe_domain + ".tt.omtrdc.net/m2/" + bk_adobet_integration.adobe_company + "/ubox/image?mbox=bk_data_feed&" + window.bk_adobet_integration.data.insertProfileBKCamps + "&" + window.bk_adobet_integration.data.bkCatIdSt + "&mboxDefault\x3dhttp%3A%2F%2Ftags.bkrtx.com%2F1x1.gif"
+		(new Image).src = "//" + bk_adobet_integration.adobe_company + ".tt.omtrdc.net/m2/" + bk_adobet_integration.adobe_company + "/ubox/image?mbox=bk_data_feed&" + window.bk_adobet_integration.data.insertProfileBKCamps + "&" + window.bk_adobet_integration.data.bkCatIdSt + "&mboxDefault\x3dhttp%3A%2F%2Ftags.bkrtx.com%2F1x1.gif"
 
 		bk_adobet_integration.functions.logger("BLUEKAI ADOBE TARGET : Profile Pixel fired");
 		bk_adobet_integration.functions.logger("BLUEKAI ADOBE TARGET : Pixel URL is '" + "//" + bk_adobet_integration.adobe_domain + ".tt.omtrdc.net/m2/" + bk_adobet_integration.adobe_company + "/ubox/image?mbox=bk_data_feed&" + window.bk_adobet_integration.data.insertProfileBKCamps + "&" + window.bk_adobet_integration.data.bkCatIdSt + "&mboxDefault\x3dhttp%3A%2F%2Ftags.bkrtx.com%2F1x1.gif'");
