@@ -53,27 +53,6 @@ DO NOT EDIT BELOW THIS LINE
 ##########################################################################################
 */
 
-// Create Objects for target party systems 
-
-/*
-##########################################################################################
-THIRD PARTY SPECIFIC CODE
-##########################################################################################
-------------------------------------------------------------------------------------------
-DFP SPECIFIC CODE
-------------------------------------------------------------------------------------------
-
-// !!! WARNING !!! Ensure that this runs before your existing GPT code and that this won't conflict with your existing 'googletag' object
-*/
-
-
-
-/*
-##########################################################################################
-END OF THIRD PARTY SPECIFIC CODE
-##########################################################################################
-*/
-
 // FUNCTION : Local Storage Send
 bk_so_integration.functions.localstorage_sender = function(data, name_of_var) {
 
@@ -203,7 +182,15 @@ bk_so_integration.functions.sendTargets = function() {
 	bk_so_integration.functions.logger("BLUEKAI SO : Determine target systems to send data")
 	
 	//bk_so_integration.functions.sendDFP()
+	
+	//bk_so_integration.functions.sendATT()
 }
+
+/*
+##########################################################################################
+DFP CODE
+##########################################################################################
+*/
 
 bk_so_integration.functions.sendDFP = function() {
 	
@@ -235,6 +222,35 @@ bk_so_integration.functions.sendDFP = function() {
 		bk_so_integration.functions.logger("BLUEKAI SO : DFP SEND : NOT SENT : data already declared");
 
 	};
+}
+
+/*
+##########################################################################################
+ADOBE TEST AND TARGET CODE
+##########################################################################################
+*/
+
+bk_so_integration.functions.sendATT = function() {
+	
+	    // Parse BlueKai Campaign Results
+	    window.bk_adobet_integration.data.insertProfileBKCamps = ("profile.bkCamps=" + window.bk_so_integration.data.bk_campaign_ids.join(","));
+	    window.bk_adobet_integration.data.insertProfileBKCatIds = ("profile.bkCatIds=" + window.bk_so_integration.data.bk_category_ids.join(","));
+	    
+	    // Parse BlueKai Campaign Results
+	    if (typeof mboxDefine === "function") {
+
+	        mboxDefine('oracle_bluekai_mbox_div', 'oracle_bluekai_mbox', window.bk_adobet_integration.data.insertProfileBKCamps, window.bk_adobet_integration.data.insertProfileBKCatIds);
+	        mboxUpdate('oracle_bluekai_mbox');
+
+	        bk_adobet_integration.functions.logger("BLUEKAI ADOBE TARGET : mbox defined");
+	        bk_adobet_integration.functions.logger("BLUEKAI ADOBE TARGET : mboxDefine('oracle_bluekai_mbox_div','oracle_bluekai_mbox'," + window.bk_adobet_integration.data.insertProfileBKCamps + "," + window.bk_adobet_integration.data.insertProfileBKCatIds + ");")
+	        bk_adobet_integration.functions.logger("BLUEKAI ADOBE TARGET : mbox updated");
+	        bk_adobet_integration.functions.logger("BLUEKAI ADOBE TARGET : mboxUpdate('oracle_bluekai_mbox');");
+
+	    } else {
+	        bk_adobet_integration.functions.logger("BLUEKAI ADOBE TARGET : mboxDefine() doesn't exist");
+	    }
+	
 }
 
 // FUNCTION : Call BlueKai
