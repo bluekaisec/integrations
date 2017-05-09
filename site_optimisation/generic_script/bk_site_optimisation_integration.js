@@ -10,6 +10,7 @@ Notes:
 - This will query BlueKai for visitor profile data (campaign IDs and Category IDs) and send to a third party site optimisation platform
 	- Supported Services:
 		- DFP - via GPT syntax https://developers.google.com/doubleclick-gpt/reference#googletag.PubAdsService_setTargeting)
+		- Adobe Target -  Send using the Adobe Target pixel. 
 - The code aims to dispatch BlueKai profile data to the third party system by either finding it via the BlueKai API or using a local storage copy
 - It aims to call the third party system as quickly as possible
 - All code is asynchronous
@@ -54,11 +55,9 @@ window.bk_so_integration.wait_in_ms = 5000; // How long to wait before asking
 // (default 5000ms)
 
 window.bk_so_integration.adobe_company = "oracleexchangepartne";
-
 window.bk_so_integration.enable_dfp = false;
 window.bk_so_integration.enable_adobetarget = true;
-
-window.bk_so_integration.include_audience_names = false;
+window.bk_so_integration.include_audience_names = true;
 
 /*
  * ##########################################################################################
@@ -97,11 +96,6 @@ bk_so_integration.functions.localstorage_retriever = function(name_of_var) {
 		bk_so_integration.functions.logger("Local Storage : Retrieved following '" + name_of_var
 				+ "' from local storage : " + result);
 		return result;
-
-	} else {
-
-		bk_so_integration.functions.logger("LOCAL STORAGE : SEND DATA : HTML 5 NOT SUPPORTED");
-		return "no storage"; // HTML 5 NOT SUPPORTED
 	}
 
 }
@@ -112,7 +106,7 @@ bk_so_integration.functions.localstorage_fallback = function() {
 	bk_so_integration.functions.logger("Local Storage : attempting fallback");
 
 	// category IDs
-	if (bk_so_integration.functions.localstorage_retriever("bk_cat_ids") !== "no storage") {
+	if (typeof (Storage) !== "undefined") {
 
 		window.bk_so_integration.data.bk_category_ids = bk_so_integration.functions
 				.localstorage_retriever("bk_cat_ids");
@@ -125,6 +119,9 @@ bk_so_integration.functions.localstorage_fallback = function() {
 
 		// Send data to DFP
 		bk_so_integration.functions.sendTargets();
+	} else {
+		bk_so_integration.functions.logger("LOCAL STORAGE : SEND DATA : HTML 5 NOT SUPPORTED");
+		return "no storage"; // HTML 5 NOT SUPPORTED
 	}
 }
 
@@ -149,6 +146,13 @@ bk_so_integration.functions.logger = function(message, attribute_object) {
 
 };
 
+bk_so_integration.functions.arrayAddUnique = function(array, entry) {
+	if (array.indexOf(entry) < 0) {
+		array.push(entry);
+	}
+
+}
+
 // FUNCTION : Parse BlueKai data and send to DFP
 bk_so_integration.functions.parseBkResults = function() {
 
@@ -165,7 +169,9 @@ bk_so_integration.functions.parseBkResults = function() {
 
 			for (var i = 0; i < bk_results.campaigns.length; i++) {
 
-				window.bk_so_integration.data.bk_campaign_ids.push(bk_results.campaigns[i].campaign);
+				var campaignId = bk_results.campaigns[i].campaign
+
+				bk_so_integration.functions.arrayAddUnique(window.bk_so_integration.data.bk_campaign_ids, campaignId);
 
 				if (window.bk_so_integration.include_audience_names) {
 
@@ -173,7 +179,8 @@ bk_so_integration.functions.parseBkResults = function() {
 
 					if (typeof (audience_name) != "undefined") {
 						bk_so_integration.functions.logger("Audience name found: " + audience_name);
-						window.bk_so_integration.data.bk_audience_names.push(audience_name);
+						bk_so_integration.functions.arrayAddUnique(window.bk_so_integration.data.bk_audience_names,
+								audience_name)
 					}
 
 				}
@@ -181,8 +188,10 @@ bk_so_integration.functions.parseBkResults = function() {
 
 					if (typeof (bk_results.campaigns[i].categories[j].categoryID) != "undefined") {
 
-						window.bk_so_integration.data.bk_category_ids
-								.push(bk_results.campaigns[i].categories[j].categoryID);
+						var categoryId = bk_results.campaigns[i].categories[j].categoryID;
+
+						bk_so_integration.functions.arrayAddUnique(window.bk_so_integration.data.bk_category_ids,
+								categoryId);
 
 					}
 				}
