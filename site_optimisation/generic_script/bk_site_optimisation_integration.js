@@ -38,11 +38,13 @@ Code Workflow:
 
  */
 
-// CONFIG : EDIT THIS PART
-// Create object to store functions
 window.bk_so_integration = window.bk_so_integration || {};
 window.bk_so_integration.functions = window.bk_so_integration.functions || {};
 window.bk_so_integration.data = window.bk_so_integration.data || {};
+
+// CONFIG : EDIT THIS PART
+// Create object to store functions
+
 window.bk_so_integration.bluekai_jsonreturn_id = "46773"; // replace with your
 // JSON Return
 // Container ID
@@ -54,8 +56,9 @@ window.bk_so_integration.wait_in_ms = 5000; // How long to wait before asking
 window.bk_so_integration.adobe_company = "oracleexchangepartne";
 
 window.bk_so_integration.enable_dfp = false;
-
 window.bk_so_integration.enable_adobetarget = true;
+
+window.bk_so_integration.include_audience_names = false;
 
 /*
  * ##########################################################################################
@@ -68,13 +71,13 @@ bk_so_integration.functions.localstorage_sender = function(data, name_of_var) {
 
 	if (typeof (Storage) !== "undefined") {
 
-		bk_so_integration.functions.logger("BLUEKAI SO : LOCAL STORAGE : storing '" + JSON.stringify(data) + "' as '"
-				+ name_of_var + "' in local storage");
+		bk_so_integration.functions.logger("LOCAL STORAGE : storing '" + JSON.stringify(data) + "' as '" + name_of_var
+				+ "' in local storage");
 		localStorage.setItem(name_of_var, JSON.stringify(data));
 
 	} else {
 
-		bk_so_integration.functions.logger("BLUEKAI SO : LOCAL STORAGE : SEND DATA : HTML 5 NOT SUPPORTED");
+		bk_so_integration.functions.logger("LOCAL STORAGE : SEND DATA : HTML 5 NOT SUPPORTED");
 		return "no storage"; // HTML 5 NOT SUPPORTED
 	}
 
@@ -85,11 +88,19 @@ bk_so_integration.functions.localstorage_retriever = function(name_of_var) {
 
 	if (typeof (Storage) !== "undefined") {
 
-		return JSON.parse(localStorage.getItem(name_of_var));
+		var result = JSON.parse(localStorage.getItem(name_of_var));
+		if (!result) {
+			bk_so_integration.functions.logger("Local Storage : no " + name_of_var
+					+ " values available in local storage. Setting to empty array.");
+			return [];
+		}
+		bk_so_integration.functions.logger("Local Storage : Retrieved following '" + name_of_var
+				+ "' from local storage : " + result);
+		return result;
 
 	} else {
 
-		bk_so_integration.functions.logger("BLUEKAI SO : LOCAL STORAGE : SEND DATA : HTML 5 NOT SUPPORTED");
+		bk_so_integration.functions.logger("LOCAL STORAGE : SEND DATA : HTML 5 NOT SUPPORTED");
 		return "no storage"; // HTML 5 NOT SUPPORTED
 	}
 
@@ -98,7 +109,7 @@ bk_so_integration.functions.localstorage_retriever = function(name_of_var) {
 // FUNCTION : Local Storage fallback
 bk_so_integration.functions.localstorage_fallback = function() {
 
-	bk_so_integration.functions.logger("BLUEKAI SO : Local Storage : attempting fallback");
+	bk_so_integration.functions.logger("Local Storage : attempting fallback");
 
 	// category IDs
 	if (bk_so_integration.functions.localstorage_retriever("bk_cat_ids") !== "no storage") {
@@ -107,37 +118,9 @@ bk_so_integration.functions.localstorage_fallback = function() {
 				.localstorage_retriever("bk_cat_ids");
 		window.bk_so_integration.data.bk_campaign_ids = bk_so_integration.functions
 				.localstorage_retriever("bk_campaign_ids");
-		window.bk_so_integration.data.bk_audience_names = bk_so_integration.functions
-				.localstorage_retriever("bk_audience_names");
-
-		if (!window.bk_so_integration.data.bk_campaign_ids) {
-			bk_so_integration.functions
-					.logger("BLUEKAI SO : Local Storage : no campaign IDs available in local storage. Setting to empty array.");
-			window.bk_so_integration.data.bk_campaign_ids = [];
-		} else {
-			bk_so_integration.functions
-					.logger("BLUEKAI SO : Local Storage : Retrieved following 'bk_campaign_ids' from local storage : "
-							+ window.bk_so_integration.data.bk_campaign_ids);
-		}
-
-		if (!window.bk_so_integration.data.bk_category_ids) {
-			bk_so_integration.functions
-					.logger("BLUEKAI SO : Local Storage : no category IDs available in local storage. Setting to empty array.");
-			window.bk_so_integration.data.bk_category_ids = [];
-		} else {
-			bk_so_integration.functions
-					.logger("BLUEKAI SO : Local Storage : Retrieved following 'bk_category_ids' from local storage : "
-							+ window.bk_so_integration.data.bk_category_ids);
-		}
-
-		if (!window.bk_so_integration.data.bk_audience_names) {
-			bk_so_integration.functions
-					.logger("BLUEKAI SO : Local Storage : no audience names available in local storage. Setting to empty array.");
-			window.bk_so_integration.data.bk_audience_names = [];
-		} else {
-			bk_so_integration.functions
-					.logger("BLUEKAI SO : Local Storage : Retrieved following 'bk_audience_names' from local storage : "
-							+ window.bk_so_integration.data.bk_audience_names);
+		if (window.bk_so_integration.include_audience_names) {
+			window.bk_so_integration.data.bk_audience_names = bk_so_integration.functions
+					.localstorage_retriever("bk_audience_names");
 		}
 
 		// Send data to DFP
@@ -156,10 +139,10 @@ bk_so_integration.functions.logger = function(message, attribute_object) {
 	if (document.cookie.indexOf('bk_so_logger=true') > -1) {
 
 		if (typeof attribute_object === "undefined") {
-			console.log(message);
+			console.log("BLUEKAI SO : " + message);
 		} else {
 			for (varName in attribute_object) {
-				console.log(message + varName + "=" + attribute_object[varName]);
+				console.log("BLUEKAI SO : " + message + varName + "=" + attribute_object[varName]);
 			}
 		}
 	}
@@ -178,19 +161,22 @@ bk_so_integration.functions.parseBkResults = function() {
 
 		if (typeof (bk_results.campaigns[0]) != "undefined") {
 
-			bk_so_integration.functions.logger("BLUEKAI SO : 'bk_results' object found");
+			bk_so_integration.functions.logger("'bk_results' object found");
 
 			for (var i = 0; i < bk_results.campaigns.length; i++) {
 
 				window.bk_so_integration.data.bk_campaign_ids.push(bk_results.campaigns[i].campaign);
 
-				var audience_name = bk_results.campaigns[i].BkDmpAudienceName;
+				if (window.bk_so_integration.include_audience_names) {
 
-				if (typeof (audience_name) != "undefined") {
-					bk_so_integration.functions.logger("BLUEKAI SO : Audience name found: " + audience_name);
-					window.bk_so_integration.data.bk_audience_names.push(audience_name);
+					var audience_name = bk_results.campaigns[i].BkDmpAudienceName;
+
+					if (typeof (audience_name) != "undefined") {
+						bk_so_integration.functions.logger("Audience name found: " + audience_name);
+						window.bk_so_integration.data.bk_audience_names.push(audience_name);
+					}
+
 				}
-
 				for (var j = 0; j < bk_results.campaigns[i].categories.length; j++) {
 
 					if (typeof (bk_results.campaigns[i].categories[j].categoryID) != "undefined") {
@@ -207,33 +193,35 @@ bk_so_integration.functions.parseBkResults = function() {
 					.localstorage_sender(window.bk_so_integration.data.bk_category_ids, "bk_cat_ids");
 			bk_so_integration.functions.localstorage_sender(window.bk_so_integration.data.bk_campaign_ids,
 					"bk_campaign_ids");
-			bk_so_integration.functions.localstorage_sender(window.bk_so_integration.data.bk_audience_names,
-					"bk_audience_names");
+			if (window.bk_so_integration.include_audience_names) {
+				bk_so_integration.functions.localstorage_sender(window.bk_so_integration.data.bk_audience_names,
+						"bk_audience_names");
+			}
 
 			// Send data to DFP
 			bk_so_integration.functions.sendTargets();
 
 		} else {
 
-			bk_so_integration.functions.logger("BLUEKAI SO : No campaigns object");
+			bk_so_integration.functions.logger("No campaigns object");
 		}
 	}
 }
 
 bk_so_integration.functions.sendTargets = function() {
 
-	bk_so_integration.functions.logger("BLUEKAI SO : Determine target systems to send data");
-	
+	bk_so_integration.functions.logger("Determine target systems to send data");
+
 	if (window.bk_so_integration.enable_dfp) {
-		bk_so_integration.functions.logger("BLUEKAI SO : DFP Enabled");
+		bk_so_integration.functions.logger("DFP Enabled");
 		bk_so_integration.functions.sendDFP();
 	}
 
 	if (window.bk_so_integration.enable_adobetarget) {
-		bk_so_integration.functions.logger("BLUEKAI SO : Adobe Target Enabled");
+		bk_so_integration.functions.logger("Adobe Target Enabled");
 		bk_so_integration.functions.sendATT();
 	}
-	
+
 }
 
 /*
@@ -255,35 +243,35 @@ bk_so_integration.functions.sendDFP = function() {
 
 					googletag.pubads().setTargeting('bk_campids', window.bk_so_integration.data.bk_campaign_ids);
 					bk_so_integration.functions
-							.logger("BLUEKAI SO : DFP SEND : EXECUTED : Declared Targeting Parameter 'bk_campids' with following array : "
+							.logger("DFP SEND : EXECUTED : Declared Targeting Parameter 'bk_campids' with following array : "
 									+ window.bk_so_integration.data.bk_campaign_ids + " (see syntax below)");
 					bk_so_integration.functions
-							.logger("BLUEKAI SO : DFP SEND : EXECUTED : Syntax 'googletag.pubads().setTargeting('bk_campids', window.bk_so_integration.data.bk_campaign_ids);'");
+							.logger("DFP SEND : EXECUTED : Syntax 'googletag.pubads().setTargeting('bk_campids', window.bk_so_integration.data.bk_campaign_ids);'");
 					googletag.pubads().setTargeting('bk_catids', window.bk_so_integration.data.bk_category_ids);
 					bk_so_integration.functions
-							.logger("BLUEKAI SO : DFP SEND : EXECUTED : Declared Targeting Parameter 'bk_catids' with following array : "
+							.logger("DFP SEND : EXECUTED : Declared Targeting Parameter 'bk_catids' with following array : "
 									+ window.bk_so_integration.data.bk_category_ids + " (see syntax below)");
 					bk_so_integration.functions
-							.logger("BLUEKAI SO : DFP SEND : EXECUTED : Syntax 'googletag.pubads().setTargeting('bk_campids', window.bk_so_integration.data.bk_category_ids);'");
+							.logger("DFP SEND : EXECUTED : Syntax 'googletag.pubads().setTargeting('bk_campids', window.bk_so_integration.data.bk_category_ids);'");
 				});
 
 		window.bk_so_integration.data.so_sent = true; // flag so data not send
 		// twice
 
 		bk_so_integration.functions
-				.logger("BLUEKAI SO : DFP SEND : QUEUED : Declared Targeting Parameter 'bk_campids' with following array : "
+				.logger("DFP SEND : QUEUED : Declared Targeting Parameter 'bk_campids' with following array : "
 						+ window.bk_so_integration.data.bk_campaign_ids + " (see syntax below)");
 		bk_so_integration.functions
-				.logger("BLUEKAI SO : DFP SEND : QUEUED : Syntax 'googletag.pubads().setTargeting('bk_campids', window.bk_so_integration.data.bk_campaign_ids);'");
+				.logger("DFP SEND : QUEUED : Syntax 'googletag.pubads().setTargeting('bk_campids', window.bk_so_integration.data.bk_campaign_ids);'");
 		bk_so_integration.functions
-				.logger("BLUEKAI SO : DFP SEND : QUEUED : Declared Targeting Parameter 'bk_catids' with following array : "
+				.logger("DFP SEND : QUEUED : Declared Targeting Parameter 'bk_catids' with following array : "
 						+ window.bk_so_integration.data.bk_category_ids + " (see syntax below)");
 		bk_so_integration.functions
-				.logger("BLUEKAI SO : DFP SEND : QUEUED : Syntax 'googletag.pubads().setTargeting('bk_campids', window.bk_so_integration.data.bk_category_ids);'");
+				.logger("DFP SEND : QUEUED : Syntax 'googletag.pubads().setTargeting('bk_campids', window.bk_so_integration.data.bk_category_ids);'");
 
 	} else {
 
-		bk_so_integration.functions.logger("BLUEKAI SO : DFP SEND : NOT SENT : data already declared");
+		bk_so_integration.functions.logger("DFP SEND : NOT SENT : data already declared");
 
 	}
 	;
@@ -299,18 +287,24 @@ bk_so_integration.functions.sendATT = function() {
 
 	// Parse BlueKai Campaign Results
 	window.bk_so_integration.data.insertProfileBKCamps = ("profile.bkCamps=" + window.bk_so_integration.data.bk_campaign_ids
-			.join(","));
+			.join("|"));
 	window.bk_so_integration.data.insertProfileBKCatIds = ("profile.bkCatIds=" + window.bk_so_integration.data.bk_category_ids
-			.join(","));
-	window.bk_so_integration.data.insertProfileBKAudienceNames = ("profile.bkAudienceNames=" + window.bk_so_integration.data.bk_audience_names
-			.join(","));
+			.join("|"));
+	if (window.bk_so_integration.include_audience_names) {
+		window.bk_so_integration.data.insertProfileBKAudienceNames = ("profile.bkAudienceNames=" + window.bk_so_integration.data.bk_audience_names
+				.join("|"));
+	}
 
 	var img_url = "//" + window.bk_so_integration.adobe_company + ".tt.omtrdc.net/m2/"
 			+ window.bk_so_integration.adobe_company + "/ubox/image?mbox=bk_data_feed&"
 			+ window.bk_so_integration.data.insertProfileBKCamps + "&"
-			+ window.bk_so_integration.data.insertProfileBKCatIds + "&"
-			+ window.bk_so_integration.data.insertProfileBKAudienceNames
-			+ "&mboxDefault\x3dhttp%3A%2F%2Ftags.bkrtx.com%2F1x1.gif";
+			+ window.bk_so_integration.data.insertProfileBKCatIds + "&";
+	if (window.bk_so_integration.include_audience_names) {
+
+		img_url = img_url + window.bk_so_integration.data.insertProfileBKAudienceNames;
+	}
+
+	img_url = img_url + "&mboxDefault\x3dhttp%3A%2F%2Ftags.bkrtx.com%2F1x1.gif";
 
 	// Parse BlueKai Campaign Results
 	(new Image).src = img_url;
@@ -328,27 +322,27 @@ bk_so_integration.functions.callBlueKai = function(bluekai_jsonreturn_id) {
 			&& (document.head && document.head.innerHTML.indexOf(bluekai_jsonreturn_id + '?ret=js') > -1)
 			|| (document.body && document.body.innerHTML.indexOf(bluekai_jsonreturn_id + '?ret=js') > -1)) {
 
-		bk_so_integration.functions.logger("BLUEKAI SO : JSON Return tag found");
-		bk_so_integration.functions.logger("BLUEKAI SO : Parsing 'bk_results' directly");
+		bk_so_integration.functions.logger("JSON Return tag found");
+		bk_so_integration.functions.logger("Parsing 'bk_results' directly");
 		bk_so_integration.functions.parseBkResults(); // Parse results (don't
 		// call JSON ret tag)
 
 	} else {
 
-		bk_so_integration.functions.logger("BLUEKAI SO : JSON Return tag NOT found");
+		bk_so_integration.functions.logger("JSON Return tag NOT found");
 		bk_so_integration.functions.localstorage_fallback(); // Grab from
 		// local storage
-		bk_so_integration.functions.logger("BLUEKAI SO : Waiting " + window.bk_so_integration.wait_in_ms
+		bk_so_integration.functions.logger("Waiting " + window.bk_so_integration.wait_in_ms
 				+ "ms before calling JSON Return Tag");
 
 		setTimeout(function() {
 
-			bk_so_integration.functions.logger("BLUEKAI SO : Calling JSON Return tag");
+			bk_so_integration.functions.logger("Calling JSON Return tag");
 			var bk_json_ret = document.createElement("script");
 			bk_json_ret.type = "text/javascript";
 			bk_json_ret.onload = function() {
-				bk_so_integration.functions.logger("BLUEKAI SO : JSON Return tag loaded");
-				bk_so_integration.functions.logger("BLUEKAI SO : Parsing 'bk_results'");
+				bk_so_integration.functions.logger("JSON Return tag loaded");
+				bk_so_integration.functions.logger("Parsing 'bk_results'");
 				bk_so_integration.functions.parseBkResults(); // Parse results
 			};
 			bk_so_integration.functions.parseBkResults(); // Parse results
