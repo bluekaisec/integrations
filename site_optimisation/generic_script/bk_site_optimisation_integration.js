@@ -295,9 +295,9 @@ bk_so_integration.functions.sendDFP = function() {
 bk_so_integration.functions.sendATT = function() {
 
 	// Parse BlueKai Campaign Results
-	window.bk_so_integration.data.insertProfileBKCamps = ("profile.bkCamps=" + window.bk_so_integration.data.bk_campaign_ids
+	window.bk_so_integration.data.insertProfileBKCamps = ("profile.bkCampaignIds=" + window.bk_so_integration.data.bk_campaign_ids
 			.join("|"));
-	window.bk_so_integration.data.insertProfileBKCatIds = ("profile.bkCatIds=" + window.bk_so_integration.data.bk_category_ids
+	window.bk_so_integration.data.insertProfileBKCatIds = ("profile.bkCategoryIds=" + window.bk_so_integration.data.bk_category_ids
 			.join("|"));
 	if (window.bk_so_integration.include_audience_names) {
 		window.bk_so_integration.data.insertProfileBKAudienceNames = ("profile.bkAudienceNames=" + window.bk_so_integration.data.bk_audience_names
