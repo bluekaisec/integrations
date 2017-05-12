@@ -42,30 +42,28 @@ Code Workflow:
 window.bk_so_integration = window.bk_so_integration || {};
 window.bk_so_integration.functions = window.bk_so_integration.functions || {};
 window.bk_so_integration.data = window.bk_so_integration.data || {};
+window.bk_so_integration.config = window.bk_so_integration.config || {};
 
 // CONFIG : EDIT THIS PART
-// Create object to store functions
 
-window.bk_so_integration.bluekai_jsonreturn_id = "46773"; // replace with your
-// JSON Return
-// Container ID
-window.bk_so_integration.wait_in_ms = 5000; // How long to wait before asking
-// BlueKai for the latest categories
-// and firing data to third party
-// (default 5000ms)
+// BlueKai Config
+window.bk_so_integration.config.bluekai_jsonreturn_id = "46773"; // replace with your JSON Return Container ID
+window.bk_so_integration.config.wait_in_ms = 5000; // How long to wait before asking BlueKai for the latest categories and firing data to third party (default 5000ms)
+window.bk_so_integration.config.include_audience_names = true; // Set to false to not share audience names to any vendors
+window.bk_so_integration.config.enable_cookie = true; // Shares BlueKai data in 1st party cookies (URL encoded)
 
-window.bk_so_integration.adobe_company = "oracleexchangepartne";
-window.bk_so_integration.enable_dfp = false;
-window.bk_so_integration.enable_cookie = true;
-window.bk_so_integration.enable_google_optimize = true;
-window.bk_so_integration.enable_adobetarget = true;
-window.bk_so_integration.include_audience_names = true;
+// Vendor code : Adobe Target
+window.bk_so_integration.config.enable_adobetarget = false; // set to true to enable integration
+window.bk_so_integration.config.adobe_company = ""; // set to company name (usually in COMPANYNAMEHERE.tt.omtrdc.net in mbox code)
 
-/*
+// Vendor code : DFP
+window.bk_so_integration.config.enable_dfp = false; // set to true to enable integration
 
-@ ALEX - do you think it's worth looping through the configs and adding this to the logged at this part of the script? Maybe bung all config stuff together in an object?
+// Vendor code : Optimizely X
+window.bk_so_integration.config.enable_optimizely = false; // set to true to enable integration
 
-*/
+// Vendor code : Google Optimize
+window.bk_so_integration.config.enable_google_optimize = false; // set to true to enable integration
 
 /*
  * ##########################################################################################
@@ -77,7 +75,9 @@ window.bk_so_integration.include_audience_names = true;
 bk_so_integration.functions.localstorage_cookie_sender = function(data, name_of_var) {
 
 	// Set data in first-party cookie if required
-	if(window.bk_so_integration.enable_cookie || window.bk_so_integration.enable_google_optimize){
+	if(window.bk_so_integration.config.enable_cookie || window.bk_so_integration.config.enable_google_optimize){
+
+		var data = encodeURIComponent(data).replace(/'/g,"%27").replace(/"/g,"%22"); //encode data before sending to cookie
 
 		document.cookie = name_of_var + "=" + data + ";path=/;domain=" +
 		document.domain + ";expires=Thu, 31 Dec 2099 00:00:00 GMT";
@@ -130,7 +130,7 @@ bk_so_integration.functions.localstorage_fallback = function() {
 				.localstorage_retriever("bk_cat_ids");
 		window.bk_so_integration.data.bk_campaign_ids = bk_so_integration.functions
 				.localstorage_retriever("bk_campaign_ids");
-		if (window.bk_so_integration.include_audience_names) {
+		if (window.bk_so_integration.config.include_audience_names) {
 			window.bk_so_integration.data.bk_audience_names = bk_so_integration.functions
 					.localstorage_retriever("bk_audience_names");
 		}
@@ -191,11 +191,12 @@ bk_so_integration.functions.parseBkResults = function() {
 
 				bk_so_integration.functions.arrayAddUnique(window.bk_so_integration.data.bk_campaign_ids, campaignId);
 
-				if (window.bk_so_integration.include_audience_names) {
+				if (window.bk_so_integration.config.include_audience_names) {
 
 					var audience_name = bk_results.campaigns[i].BkDmpAudienceName;
 
 					if (typeof (audience_name) != "undefined") {
+						audience_name = decodeURIComponent(audience_name.replace(/\+/g,  " ")); // decode URI
 						bk_so_integration.functions.logger("Audience name found: " + audience_name);
 						bk_so_integration.functions.arrayAddUnique(window.bk_so_integration.data.bk_audience_names,
 								audience_name)
@@ -220,7 +221,7 @@ bk_so_integration.functions.parseBkResults = function() {
 					.localstorage_cookie_sender(window.bk_so_integration.data.bk_category_ids, "bk_cat_ids");
 			bk_so_integration.functions.localstorage_cookie_sender(window.bk_so_integration.data.bk_campaign_ids,
 					"bk_campaign_ids");
-			if (window.bk_so_integration.include_audience_names) {
+			if (window.bk_so_integration.config.include_audience_names) {
 				bk_so_integration.functions.localstorage_cookie_sender(window.bk_so_integration.data.bk_audience_names,
 						"bk_audience_names");
 			}
@@ -239,13 +240,11 @@ bk_so_integration.functions.sendTargets = function() {
 
 	bk_so_integration.functions.logger("Determine target systems to send data");
 
-	if (window.bk_so_integration.enable_dfp) {
-		bk_so_integration.functions.logger("DFP Enabled");
+	if (window.bk_so_integration.config.enable_dfp) {		
 		bk_so_integration.functions.sendDFP();
 	}
 
-	if (window.bk_so_integration.enable_adobetarget) {
-		bk_so_integration.functions.logger("Adobe Target Enabled");
+	if (window.bk_so_integration.config.enable_adobetarget) {		
 		bk_so_integration.functions.sendATT();
 	}
 
@@ -256,6 +255,10 @@ bk_so_integration.functions.sendTargets = function() {
  * DFP CODE
  * ##########################################################################################
  */
+
+// Log config set up quickly
+
+
 
 bk_so_integration.functions.sendDFP = function() {
 
@@ -317,16 +320,16 @@ bk_so_integration.functions.sendATT = function() {
 			.join("|"));
 	window.bk_so_integration.data.insertProfileBKCatIds = ("profile.bkCatIds=" + window.bk_so_integration.data.bk_category_ids
 			.join("|"));
-	if (window.bk_so_integration.include_audience_names) {
+	if (window.bk_so_integration.config.include_audience_names) {
 		window.bk_so_integration.data.insertProfileBKAudienceNames = ("profile.bkAudienceNames=" + window.bk_so_integration.data.bk_audience_names
 				.join("|"));
 	}
 
-	var img_url = "//" + window.bk_so_integration.adobe_company + ".tt.omtrdc.net/m2/"
-			+ window.bk_so_integration.adobe_company + "/ubox/image?mbox=bk_data_feed&"
+	var img_url = "//" + window.bk_so_integration.config.adobe_company + ".tt.omtrdc.net/m2/"
+			+ window.bk_so_integration.config.adobe_company + "/ubox/image?mbox=bk_data_feed&"
 			+ window.bk_so_integration.data.insertProfileBKCamps + "&"
 			+ window.bk_so_integration.data.insertProfileBKCatIds + "&";
-	if (window.bk_so_integration.include_audience_names) {
+	if (window.bk_so_integration.config.include_audience_names) {
 
 		img_url = img_url + window.bk_so_integration.data.insertProfileBKAudienceNames;
 	}
@@ -359,7 +362,7 @@ bk_so_integration.functions.callBlueKai = function(bluekai_jsonreturn_id) {
 		bk_so_integration.functions.logger("JSON Return tag NOT found");
 		bk_so_integration.functions.localstorage_fallback(); // Grab from
 		// local storage
-		bk_so_integration.functions.logger("Waiting " + window.bk_so_integration.wait_in_ms
+		bk_so_integration.functions.logger("Waiting " + window.bk_so_integration.config.wait_in_ms
 				+ "ms before calling JSON Return Tag");
 
 		setTimeout(function() {
@@ -378,9 +381,9 @@ bk_so_integration.functions.callBlueKai = function(bluekai_jsonreturn_id) {
 
 			document.head.appendChild(bk_json_ret);
 
-		}, window.bk_so_integration.wait_in_ms);
+		}, window.bk_so_integration.config.wait_in_ms);
 	}
 };
 
 // RUN CODE
-bk_so_integration.functions.callBlueKai(window.bk_so_integration.bluekai_jsonreturn_id);
+bk_so_integration.functions.callBlueKai(window.bk_so_integration.config.bluekai_jsonreturn_id);
