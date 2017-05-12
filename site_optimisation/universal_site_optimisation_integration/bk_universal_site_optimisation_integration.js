@@ -50,7 +50,7 @@ window.bk_so_integration.config = window.bk_so_integration.config || {};
 window.bk_so_integration.config.bluekai_jsonreturn_id = "35964"; // replace with your JSON Return Container ID
 window.bk_so_integration.config.wait_in_ms = 5000; // How long to wait before asking BlueKai for the latest categories and firing data to third party (default 5000ms)
 window.bk_so_integration.config.include_audience_names = true; // Set to false to not share audience names to any vendors
-window.bk_so_integration.config.enable_cookie = true; // Shares BlueKai data in 1st party cookies (URL encoded)
+window.bk_so_integration.config.enable_cookie = false; // Shares BlueKai data in 1st party cookies (URL encoded)
 
 // Vendor code : Adobe Target
 window.bk_so_integration.config.enable_adobetarget = false; // set to true to enable integration
