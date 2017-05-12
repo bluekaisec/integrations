@@ -62,6 +62,12 @@ window.bk_so_integration.enable_adobetarget = true;
 window.bk_so_integration.include_audience_names = true;
 
 /*
+
+@ ALEX - do you think it's worth looping through the configs and adding this to the logged at this part of the script? Maybe bung all config stuff together in an object?
+
+*/
+
+/*
  * ##########################################################################################
  * DO NOT EDIT BELOW THIS LINE
  * ##########################################################################################
@@ -75,6 +81,9 @@ bk_so_integration.functions.localstorage_cookie_sender = function(data, name_of_
 
 		document.cookie = name_of_var + "=" + data + ";path=/;domain=" +
 		document.domain + ";expires=Thu, 31 Dec 2099 00:00:00 GMT";
+
+		bk_so_integration.functions.logger("COOKIES : storing '" + JSON.stringify(data) + "' as '" + name_of_var
+				+ "' cookie");
 	}
 	
 	if (typeof (Storage) !== "undefined") {
