@@ -47,14 +47,14 @@ window.bk_so_integration.config = window.bk_so_integration.config || {};
 // CONFIG : EDIT THIS PART
 
 // BlueKai Config
-window.bk_so_integration.config.bluekai_jsonreturn_id = "35964"; // replace with your JSON Return Container ID
+window.bk_so_integration.config.bluekai_jsonreturn_id = "<site-id>"; // replace with your JSON Return Container ID
 window.bk_so_integration.config.wait_in_ms = 5000; // How long to wait before asking BlueKai for the latest categories and firing data to third party (default 5000ms)
 window.bk_so_integration.config.include_audience_names = true; // Set to false to not share audience names to any vendors
 window.bk_so_integration.config.enable_cookie = false; // Shares BlueKai data in 1st party cookies (URL encoded)
 
 // Vendor code : Adobe Target
 window.bk_so_integration.config.enable_adobetarget = false; // set to true to enable integration
-window.bk_so_integration.config.adobe_company = ""; // set to company name (usually in COMPANYNAMEHERE.tt.omtrdc.net in mbox code)
+window.bk_so_integration.config.adobe_company = "<customer-id>"; // set to company name (usually in COMPANYNAMEHERE.tt.omtrdc.net in mbox code)
 
 // Vendor code : DFP
 window.bk_so_integration.config.enable_dfp = false; // set to true to enable integration
@@ -317,13 +317,13 @@ bk_so_integration.functions.sendDFP = function() {
 bk_so_integration.functions.sendATT = function() {
 
 	// Parse BlueKai Campaign Results
-	window.bk_so_integration.data.insertProfileBKCamps = ("profile.bkCamps=" + window.bk_so_integration.data.bk_campaign_ids
-			.join("|"));
-	window.bk_so_integration.data.insertProfileBKCatIds = ("profile.bkCatIds=" + window.bk_so_integration.data.bk_category_ids
-			.join("|"));
+	window.bk_so_integration.data.insertProfileBKCamps = ("profile.bkCampaignIds=|" + window.bk_so_integration.data.bk_campaign_ids 
+			.join("|") + "|");
+	window.bk_so_integration.data.insertProfileBKCatIds = ("profile.bkCategoryIds=|" + window.bk_so_integration.data.bk_category_ids
+			.join("|")  + "|");
 	if (window.bk_so_integration.config.include_audience_names) {
-		window.bk_so_integration.data.insertProfileBKAudienceNames = ("profile.bkAudienceNames=" + window.bk_so_integration.data.bk_audience_names
-				.join("|"));
+		window.bk_so_integration.data.insertProfileBKAudienceNames = ("profile.bkAudienceNames=|" + window.bk_so_integration.data.bk_audience_names
+				.join("|") + "|");
 	}
 
 	var img_url = "//" + window.bk_so_integration.config.adobe_company + ".tt.omtrdc.net/m2/"
