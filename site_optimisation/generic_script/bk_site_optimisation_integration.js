@@ -32,7 +32,7 @@ Code Workflow:
 - If visitor profile data has been returned:
 	- it will parse that
 - Whenever BlueKai profile data is found:
-	- it will store it for reference in localstorage
+	- it will store it for reference in localstorage (and a first party cookie if configured to)
 	- it will call send the data to the third party system
 	- If the data has already been send to the third party system, it won't do it again
 - Use the debugging to check the workflow
@@ -56,6 +56,8 @@ window.bk_so_integration.wait_in_ms = 5000; // How long to wait before asking
 
 window.bk_so_integration.adobe_company = "oracleexchangepartne";
 window.bk_so_integration.enable_dfp = false;
+window.bk_so_integration.enable_cookie = true;
+window.bk_so_integration.enable_google_optimize = true;
 window.bk_so_integration.enable_adobetarget = true;
 window.bk_so_integration.include_audience_names = true;
 
@@ -66,8 +68,15 @@ window.bk_so_integration.include_audience_names = true;
  */
 
 // FUNCTION : Local Storage Send
-bk_so_integration.functions.localstorage_sender = function(data, name_of_var) {
+bk_so_integration.functions.localstorage_cookie_sender = function(data, name_of_var) {
 
+	// Set data in first-party cookie if required
+	if(window.bk_so_integration.enable_cookie || window.bk_so_integration.enable_google_optimize){
+
+		document.cookie = name_of_var + "=" + data + ";path=/;domain=" +
+		document.domain + ";expires=Thu, 31 Dec 2099 00:00:00 GMT";
+	}
+	
 	if (typeof (Storage) !== "undefined") {
 
 		bk_so_integration.functions.logger("LOCAL STORAGE : storing '" + JSON.stringify(data) + "' as '" + name_of_var
@@ -199,11 +208,11 @@ bk_so_integration.functions.parseBkResults = function() {
 
 			// Send data to Local Storage
 			bk_so_integration.functions
-					.localstorage_sender(window.bk_so_integration.data.bk_category_ids, "bk_cat_ids");
-			bk_so_integration.functions.localstorage_sender(window.bk_so_integration.data.bk_campaign_ids,
+					.localstorage_cookie_sender(window.bk_so_integration.data.bk_category_ids, "bk_cat_ids");
+			bk_so_integration.functions.localstorage_cookie_sender(window.bk_so_integration.data.bk_campaign_ids,
 					"bk_campaign_ids");
 			if (window.bk_so_integration.include_audience_names) {
-				bk_so_integration.functions.localstorage_sender(window.bk_so_integration.data.bk_audience_names,
+				bk_so_integration.functions.localstorage_cookie_sender(window.bk_so_integration.data.bk_audience_names,
 						"bk_audience_names");
 			}
 
