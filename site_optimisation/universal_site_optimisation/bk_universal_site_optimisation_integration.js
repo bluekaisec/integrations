@@ -21,9 +21,10 @@ Debugger:
 
 Implementation Instructions:
 
+- Update the config as per the "CONFIG" section below (please reach out to Oracle for help if required)
+
 - Third party specific instructions:
 	- DFP - DFP to be implemented via Google Publisher Tag (https://developers.google.com/doubleclick-gpt/)
-- Update the config as per the "CONFIG" section below (please reach out to Oracle for help if required)
 
 Code Workflow:
 
@@ -39,6 +40,7 @@ Code Workflow:
 
  */
 
+// Do not edit
 window.bk_so_integration = window.bk_so_integration || {};
 window.bk_so_integration.functions = window.bk_so_integration.functions || {};
 window.bk_so_integration.data = window.bk_so_integration.data || {};
@@ -47,7 +49,7 @@ window.bk_so_integration.config = window.bk_so_integration.config || {};
 // CONFIG : EDIT THIS PART
 
 // BlueKai Config
-window.bk_so_integration.config.bluekai_jsonreturn_id = "46773"; // replace with your JSON Return Container ID
+window.bk_so_integration.config.bluekai_jsonreturn_id = "35964"; // replace with your JSON Return Container ID
 window.bk_so_integration.config.wait_in_ms = 5000; // How long to wait before asking BlueKai for the latest categories and firing data to third party (default 5000ms)
 window.bk_so_integration.config.include_audience_names = true; // Set to false to not share audience names to any vendors
 window.bk_so_integration.config.enable_cookie = true; // Shares BlueKai data in 1st party cookies (URL encoded)
@@ -77,12 +79,13 @@ bk_so_integration.functions.localstorage_cookie_sender = function(data, name_of_
 	// Set data in first-party cookie if required
 	if(window.bk_so_integration.config.enable_cookie || window.bk_so_integration.config.enable_google_optimize){
 
-		var data = encodeURIComponent(data).replace(/'/g,"%27").replace(/"/g,"%22"); //encode data before sending to cookie
+		// encode cookie value if sending audience names
+		var cookie_data = (name_of_var === "bk_audience_names") ? encodeURIComponent(data).replace(/'/g,"%27").replace(/"/g,"%22") : data; 
 
-		document.cookie = name_of_var + "=" + data + ";path=/;domain=" +
+		document.cookie = name_of_var + "=" + cookie_data + ";path=/;domain=" +
 		document.domain + ";expires=Thu, 31 Dec 2099 00:00:00 GMT";
 
-		bk_so_integration.functions.logger("COOKIES : storing '" + JSON.stringify(data) + "' as '" + name_of_var
+		bk_so_integration.functions.logger("COOKIES : storing '" + JSON.stringify(cookie_data) + "' as '" + name_of_var
 				+ "' cookie");
 	}
 	
@@ -384,6 +387,13 @@ bk_so_integration.functions.callBlueKai = function(bluekai_jsonreturn_id) {
 		}, window.bk_so_integration.config.wait_in_ms);
 	}
 };
+
+// CONFIG LOGGING : Loop through config and log
+for (configs in window.bk_so_integration.config){
+
+	bk_so_integration.functions.logger("CONFIG : " + configs + " = " + window.bk_so_integration.config[configs]);
+
+}
 
 // RUN CODE
 bk_so_integration.functions.callBlueKai(window.bk_so_integration.config.bluekai_jsonreturn_id);
