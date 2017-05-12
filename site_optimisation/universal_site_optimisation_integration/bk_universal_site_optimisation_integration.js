@@ -1,7 +1,7 @@
 /*
-####################################################################
-### ORACLE BLUEKAI : Site Optimisation : JSON Return integration ###
-####################################################################
+################################################################
+### ORACLE BLUEKAI : Universal Site Optimisation Integration ###
+################################################################
 
 Author : roshan.gonsalkorale@oracle.com, alex.wilton@oracle.com, mike.knott@oracle.com
 
