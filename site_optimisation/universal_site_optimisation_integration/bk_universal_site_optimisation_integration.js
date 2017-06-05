@@ -59,6 +59,7 @@ window.bk_so_integration.config.adobe_company = "<customer-id>"; // set to compa
 // Vendor code : Google AdWords (RLSA)
 window.bk_so_integration.config.enable_googleadwords = false; // set to true to enable integration
 window.bk_so_integration.config.adwords_conversionid = 1111111111; // Set to AdWords Conversion ID (See https://support.google.com/adwords/answer/2476688?hl=en-GB for help - the value will show where like "var google_conversion_id = 871982529";)
+window.bk_so_integration.config.adwords_trim_audiencename_trim_length = 0; // Set to 0 to not trim audince names being used as custom parameter names (or to a number to trim to X characters). Google recommends 16 characters but doesn't seem to mind
 
 // Vendor code : DFP
 window.bk_so_integration.config.enable_dfp = false; // set to true to enable integration
@@ -317,9 +318,9 @@ bk_so_integration.functions.sendDFP = function() {
 }
 
 /*
-#########################################
-GOOGLE ADWORDS : RLSA : CONVERSION : Code
-#########################################
+################################
+GOOGLE ADWORDS CONVERSION : Code
+################################
 */
 
 // FUNCTION : Pixel firing
@@ -334,13 +335,23 @@ bk_so_integration.functions.sendGoogleAdWordsPixel = function(){
 		bk_so_integration.functions.logger("ADWORDS SEND : Audience Names Found");	
 
 		// generate custom params
-		var google_custom_data = {audience_names:[]};
+		var google_custom_data = {bk_audiencenames:[]};
 
 		for (var i = bk_so_integration.data.bk_audience_names.length - 1; i >= 0; i--) {
 
-			google_custom_data.audience_names.push(bk_so_integration.data.bk_audience_names[i]); // add to 'audience_names' var
+			google_custom_data.bk_audiencenames.push(bk_so_integration.data.bk_audience_names[i]); // add to 'audience_names' var
 
-			google_custom_data["Audience - " + bk_so_integration.data.bk_audience_names[i]] = true;
+			var audience_name = "bk_" + bk_so_integration.data.bk_audience_names[i].replace(/\ /g,"").toLowerCase(); // Ensure audience name friendly
+
+			// Trim audience name if required
+			if(window.bk_so_integration.config.adwords_trim_audiencename_trim_length){
+
+				audience_name = audience_name.substring(0,window.bk_so_integration.config.adwords_trim_audiencename_trim_length);
+				bk_so_integration.functions.logger("ADWORDS SEND : Trimming audience name to " + window.bk_so_integration.config.adwords_trim_audiencename_trim_length + " characters : " + audience_name);
+				
+			} 
+			
+			google_custom_data[audience_name] = true;
 
 		}		
 
@@ -361,6 +372,35 @@ bk_so_integration.functions.sendGoogleAdWordsPixel = function(){
 		bk_so_integration.functions.logger("ADWORDS SEND : No Audience Names Found - not firing AdWords Pixel");	
 	}
     	
+}
+
+// FUNCTION : Trigger AdWords code
+bk_so_integration.functions.sendGoogleAdWords = function(){
+
+	bk_so_integration.functions.logger("ADWORDS SEND : Checking for AdWords Script");
+	if(!window.bk_so_integration.config.adwords_script_loaded){
+
+		bk_so_integration.functions.logger("ADWORDS SEND : Checking for AdWords Script - Not found - call '//www.googleadservices.com/pagead/conversion_async.js'");	
+		var bk_google_adwords = document.createElement("script");
+		bk_google_adwords.type = "text/javascript";
+		bk_google_adwords.charset = "utf-8";
+		bk_google_adwords.src = "//www.googleadservices.com/pagead/conversion_async.js";
+		bk_google_adwords.onload = function() {
+
+			window.bk_so_integration.config.adwords_script_loaded = true;
+			bk_so_integration.functions.sendGoogleAdWordsPixel(); // fire pixel
+
+		}
+
+		document.head.appendChild(bk_google_adwords);
+
+	} else {
+
+		bk_so_integration.functions.logger("ADWORDS SEND : Checking for AdWords Script - Not found - DO NOT call '//www.googleadservices.com/pagead/conversion_async.js'");			
+		bk_so_integration.functions.sendGoogleAdWordsPixel(); // fire pixel
+
+	}
+	
 }
 
 /*
