@@ -56,6 +56,10 @@ window.bk_so_integration.config.enable_cookie = false; // Shares BlueKai data in
 window.bk_so_integration.config.enable_adobetarget = false; // set to true to enable integration
 window.bk_so_integration.config.adobe_company = "<customer-id>"; // set to company name (usually in COMPANYNAMEHERE.tt.omtrdc.net in mbox code)
 
+// Vendor code : Google AdWords (RLSA)
+window.bk_so_integration.config.enable_googleadwords = true; // set to true to enable integration
+window.bk_so_integration.config.adwords_conversionid = 1111111111; // Set to AdWords Conversion ID (See https://support.google.com/adwords/answer/2476688?hl=en-GB for help - the value will show where like "var google_conversion_id = 871982529";)
+
 // Vendor code : DFP
 window.bk_so_integration.config.enable_dfp = false; // set to true to enable integration
 
@@ -249,6 +253,10 @@ bk_so_integration.functions.sendTargets = function() {
 		bk_so_integration.functions.sendATT();
 	}
 
+	if (window.bk_so_integration.config.enable_googleadwords) {		
+		bk_so_integration.functions.sendGoogleAdWords();
+	}
+
 }
 
 /*
@@ -306,6 +314,53 @@ bk_so_integration.functions.sendDFP = function() {
 
 	}
 	;
+}
+
+/*
+#########################################
+GOOGLE ADWORDS : RLSA : CONVERSION : Code
+#########################################
+*/
+
+// FUNCTION : Pixel firing
+
+bk_so_integration.functions.sendGoogleAdWordsPixel = function(){
+
+	bk_so_integration.functions.logger("ADWORDS SEND : Checking for audience names");	
+
+	// Generate audiences/pixels
+	if(bk_so_integration.data.bk_audience_names && bk_so_integration.data.bk_audience_names[0]){
+
+		bk_so_integration.functions.logger("ADWORDS SEND : Audience Names Found");	
+
+		// generate custom params
+		var google_custom_data = {audience_names:[]};
+
+		for (var i = bk_so_integration.data.bk_audience_names.length - 1; i >= 0; i--) {
+
+			google_custom_data.audience_names.push(bk_so_integration.data.bk_audience_names[i]); // add to 'audience_names' var
+
+			google_custom_data["Audience - " + bk_so_integration.data.bk_audience_names[i]] = true;
+
+		}		
+
+		bk_so_integration.functions.logger("ADWORDS SEND : Firing AdWords Pixel");	
+
+		var google_data = {
+			google_conversion_id: window.bk_so_integration.config.adwords_conversionid,
+			google_custom_params: google_custom_data,		
+			google_remarketing_only: true
+		}
+
+		window.google_trackConversion(google_data);
+
+		bk_so_integration.functions.logger("ADWORDS SEND : AdWords Pixel Fired with following data : " + JSON.stringify(google_data));			
+
+	} else {
+
+		bk_so_integration.functions.logger("ADWORDS SEND : No Audience Names Found - not firing AdWords Pixel");	
+	}
+    	
 }
 
 /*
