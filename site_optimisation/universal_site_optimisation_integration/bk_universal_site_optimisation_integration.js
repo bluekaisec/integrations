@@ -57,7 +57,7 @@ window.bk_so_integration.config.enable_adobetarget = false; // set to true to en
 window.bk_so_integration.config.adobe_company = "<customer-id>"; // set to company name (usually in COMPANYNAMEHERE.tt.omtrdc.net in mbox code)
 
 // Vendor code : Google AdWords (RLSA)
-window.bk_so_integration.config.enable_googleadwords = true; // set to true to enable integration
+window.bk_so_integration.config.enable_googleadwords = false; // set to true to enable integration
 window.bk_so_integration.config.adwords_conversionid = 1111111111; // Set to AdWords Conversion ID (See https://support.google.com/adwords/answer/2476688?hl=en-GB for help - the value will show where like "var google_conversion_id = 871982529";)
 
 // Vendor code : DFP
