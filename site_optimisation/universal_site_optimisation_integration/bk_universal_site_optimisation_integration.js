@@ -9,7 +9,8 @@ Notes:
 
 - This will query BlueKai for visitor profile data (campaign IDs and Category IDs) and send to a third party site optimisation platform
 	- Supported Services:
-		- DFP - via GPT syntax https://developers.google.com/doubleclick-gpt/reference#googletag.PubAdsService_setTargeting)
+		- DFP - https://developers.google.com/doubleclick-gpt/reference#googletag.PubAdsService_setTargeting. Additional page config is required.
+		- Google AdWords - Via custom parameters (https://support.google.com/adwords/answer/6325879?hl=en-GB)
 		- Adobe Target -  Send using the Adobe Target pixel. 
 - The code aims to dispatch BlueKai profile data to the third party system by either finding it via the BlueKai API or using a local storage copy
 - It aims to call the third party system as quickly as possible
@@ -21,9 +22,8 @@ Debugger:
 
 Implementation Instructions:
 
-- Third party specific instructions:
-	- DFP - DFP to be implemented via Google Publisher Tag (https://developers.google.com/doubleclick-gpt/)
-- Update the config as per the "CONFIG" section below (please reach out to Oracle for help if required)
+	- Host this code and run it in the <head> of your website
+	- Ensure the configuration options are set correctly
 
 Code Workflow:
 
@@ -261,9 +261,9 @@ bk_so_integration.functions.sendTargets = function() {
 }
 
 /*
- * ##########################################################################################
- * DFP CODE
- * ##########################################################################################
+ ################
+ ### DFP CODE ###
+ ################
  */
 
 // Log config set up quickly
@@ -271,50 +271,12 @@ bk_so_integration.functions.sendTargets = function() {
 
 
 bk_so_integration.functions.sendDFP = function() {
-
-	if (!window.bk_so_integration.data.so_sent) {
-
-		var googletag = googletag || {};
-		googletag.cmd = googletag.cmd || [];
-
-		// Surface attributes to DFP
-		googletag.cmd
-				.push(function() {
-
-					googletag.pubads().setTargeting('bk_campids', window.bk_so_integration.data.bk_campaign_ids);
-					bk_so_integration.functions
-							.logger("DFP SEND : EXECUTED : Declared Targeting Parameter 'bk_campids' with following array : "
-									+ window.bk_so_integration.data.bk_campaign_ids + " (see syntax below)");
-					bk_so_integration.functions
-							.logger("DFP SEND : EXECUTED : Syntax 'googletag.pubads().setTargeting('bk_campids', window.bk_so_integration.data.bk_campaign_ids);'");
-					googletag.pubads().setTargeting('bk_catids', window.bk_so_integration.data.bk_category_ids);
-					bk_so_integration.functions
-							.logger("DFP SEND : EXECUTED : Declared Targeting Parameter 'bk_catids' with following array : "
-									+ window.bk_so_integration.data.bk_category_ids + " (see syntax below)");
-					bk_so_integration.functions
-							.logger("DFP SEND : EXECUTED : Syntax 'googletag.pubads().setTargeting('bk_campids', window.bk_so_integration.data.bk_category_ids);'");
-				});
-
-		window.bk_so_integration.data.so_sent = true; // flag so data not send
-		// twice
-
-		bk_so_integration.functions
-				.logger("DFP SEND : QUEUED : Declared Targeting Parameter 'bk_campids' with following array : "
-						+ window.bk_so_integration.data.bk_campaign_ids + " (see syntax below)");
-		bk_so_integration.functions
-				.logger("DFP SEND : QUEUED : Syntax 'googletag.pubads().setTargeting('bk_campids', window.bk_so_integration.data.bk_campaign_ids);'");
-		bk_so_integration.functions
-				.logger("DFP SEND : QUEUED : Declared Targeting Parameter 'bk_catids' with following array : "
-						+ window.bk_so_integration.data.bk_category_ids + " (see syntax below)");
-		bk_so_integration.functions
-				.logger("DFP SEND : QUEUED : Syntax 'googletag.pubads().setTargeting('bk_campids', window.bk_so_integration.data.bk_category_ids);'");
-
-	} else {
-
-		bk_so_integration.functions.logger("DFP SEND : NOT SENT : data already declared");
-
-	}
-	;
+	
+	bk_so_integration.functions.logger("DFP : HELP : Ensure you declare 'googletag.pubads().setTargeting('bk_campids', window.bk_so_integration.data.bk_campaign_ids);' when generating your ad call")
+	bk_so_integration.functions.logger("DFP : HELP : Ensure you declare 'googletag.pubads().setTargeting('bk_catids', window.bk_so_integration.data.bk_category_ids);' when generating your ad call")
+	bk_so_integration.functions.logger("DFP : HELP : Do this before 'googletag.enableServices();' within the same 'googletag.cmd.push(function(){HERE});' as when you generate your ad calls");
+	bk_so_integration.functions.logger("DFP : HELP : See 'Page-level customized targeting' in https://support.google.com/dfp_premium/answer/1697712?hl=en");
+	
 }
 
 /*
