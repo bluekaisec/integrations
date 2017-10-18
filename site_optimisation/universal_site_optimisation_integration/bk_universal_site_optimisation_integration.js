@@ -392,7 +392,7 @@ bk_so_integration.functions.sendATT = function() {
 		img_url = img_url + window.bk_so_integration.data.insertProfileBKAudienceNames;
 	}
 
-	img_url = img_url + "&mboxDefault\x3dhttp%3A%2F%2Ftags.bkrtx.com%2F1x1.gif";
+	img_url = img_url + "&mboxDefault\x3d//tags.bkrtx.com/1x1.gif";
 
 	// Parse BlueKai Campaign Results
 	(new Image).src = img_url;
